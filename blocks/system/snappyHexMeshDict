@@ -1,0 +1,92 @@
+/*--------------------------------*- C++ -*----------------------------------*\
+  =========                 |
+  \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
+   \\    /   O peration     | Website:  https://openfoam.org
+    \\  /    A nd           | Version:  6
+     \\/     M anipulation  |
+\*---------------------------------------------------------------------------*/
+FoamFile
+{
+    version     2.0;
+    format      ascii;
+    class       dictionary;
+    object      snappyHexMeshDict;
+}
+
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+
+#includeEtc "caseDicts/mesh/generation/snappyHexMeshDict.cfg"
+
+castellatedMesh true;
+snap            true;
+addLayers       false;
+
+geometry
+{
+    fluidAndSolid
+    {
+        type triSurfaceMesh;
+        file "fluidAndSolid.stl";
+
+        regions
+        {
+            fluidInlet     { name fluidInlet;     }
+            fluidOutlet    { name fluidOutlet;    }
+            fluidExternal  { name fluidExternal;  }
+            solidBase      { name solidBase;      }
+        }
+    }
+
+    solidToFluid
+    {
+        type triSurfaceMesh;
+        file "solidToFluid.stl";
+    }
+};
+
+castellatedMeshControls
+{
+    refinementSurfaces
+    {
+        fluidAndSolid
+        {
+            level (0 0);
+            regions
+            {
+                fluidInlet     { level (0 0); patchInfo { type patch; } }
+                fluidOutlet    { level (0 0); patchInfo { type patch; } }
+                fluidExternal  { level (1 1); patchInfo { type wall;  } }
+                solidBase      { level (1 1); patchInfo { type wall;  } }
+            }
+        }
+
+        solidToFluid
+        {
+            level (1 1);
+            faceZone solidToFluid;
+            cellZone solid;
+            cellZoneInside insidePoint;
+            insidePoint (0.5 0.5 0.5);
+        }
+
+    }
+
+    nCellsBetweenLevels 1;
+
+    refinementRegions
+    {}
+
+    locationInMesh (0.5 1.5 0.5);
+}
+
+addLayersControls
+{
+    relativeSizes       true;
+    minThickness        1;
+    finalLayerThickness 1;
+    expansionRatio      1;
+    layers
+    {}
+}
+
+// ************************************************************************* //
